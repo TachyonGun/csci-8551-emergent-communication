@@ -138,14 +138,20 @@ class GameModule(nn.Module):
         goal_agents = self.goals[:,:,2].unsqueeze(2)
         self.observed_goals = torch.cat((new_obs, goal_agents), dim=2)
         
-        # Update state history
-        if self.collect_state_history:
-            self.state_history.append(self.return_state())
         
         if self.using_utterances:
             self.utterances = utterances
+
+            # Update state history
+            if self.collect_state_history:
+                self.state_history.append(self.return_state())
+        
             return self.compute_cost(movements, goal_predictions, utterances)
         else:
+          # Update state history
+          if self.collect_state_history:
+              self.state_history.append(self.return_state())
+        
             return self.compute_cost(movements, goal_predictions)
 
     def compute_cost(self, movements, goal_predictions, utterances=None):
