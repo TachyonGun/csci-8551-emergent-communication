@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Nov 13 22:17:11 2021
+
+@author: sierr
+"""
+
 import torch
 import torch.nn as nn
 from torch import Tensor
@@ -26,9 +33,11 @@ from torch.autograd import Variable
 
 class GameModule(nn.Module):
 
-    def __init__(self, config, num_agents, num_landmarks):
+    def __init__(self, config, num_agents, num_landmarks, collect_state_history=True):
         super(GameModule, self).__init__()
-
+        
+        self.collect_state_history = collect_state_history
+        self.state_history = []
         self.batch_size = config.batch_size # scalar: num games in this batch
         self.using_utterances = config.use_utterances # bool: whether current batch allows utterances
         self.using_cuda = config.use_cuda
@@ -62,7 +71,7 @@ class GameModule(nn.Module):
 
         #TODO: Bad for loop?
         for b in range(self.batch_size):
-            goal_agents[b] = torch.randperm(self.num_agents)
+            goal_agents[b] = torch.randperm(self.num_agents)[:, None] # expanded with dummy axis
 
         for b in range(self.batch_size):
             goal_locations[b] = self.locations.data[b][goal_entities[b].squeeze()]
@@ -105,8 +114,12 @@ class GameModule(nn.Module):
 
         # [batch_size, num_agents, 2] [batch_size, num_agents, 1]
         self.observed_goals = torch.cat((new_obs, goal_agents), dim=2)
+        if self.collect_state_history:
+            self.state_history.append(self.return_state())
 
-
+    
+    def return_state(self):
+        return [self.locations, self.physical]
 
     """
     Updates game state given all movements and utterances and returns accrued cost
@@ -115,6 +128,7 @@ class GameModule(nn.Module):
         - goal_predictions: [batch_size, num_agents, num_agents, config.goal_size]
     Returns:
         - scalar: total cost of all games in the batch
+    
     """
     def forward(self, movements, goal_predictions, utterances):
         self.locations = self.locations + movements
@@ -123,6 +137,11 @@ class GameModule(nn.Module):
         new_obs = self.goals[:,:,:2] - agent_baselines
         goal_agents = self.goals[:,:,2].unsqueeze(2)
         self.observed_goals = torch.cat((new_obs, goal_agents), dim=2)
+        
+        # Update state history
+        if self.collect_state_history:
+            self.state_history.append(self.return_state())
+        
         if self.using_utterances:
             self.utterances = utterances
             return self.compute_cost(movements, goal_predictions, utterances)
