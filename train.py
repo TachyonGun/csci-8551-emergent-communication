@@ -27,6 +27,9 @@ parser.add_argument('--oov-prob', '-o', type=int, help='higher value penalize un
 parser.add_argument('--load-model-weights', type=str, help='if specified start with saved model weights saved at file given by this argument')
 parser.add_argument('--save-model-weights', type=str, help='if specified save the model weights at file given by this argument')
 parser.add_argument('--use-cuda', action='store_true', help='if specified enables training on CUDA (default disabled)')
+parser.add_argument('--show-timestep', action='store_true', help='show a timestep structure')
+
+
 
 def print_losses(epoch, losses, dists, game_config):
     for a in range(game_config.min_agents, game_config.max_agents + 1):
@@ -65,12 +68,15 @@ def main():
             game.cuda()
         optimizer.zero_grad()
 
-        total_loss, _ = agent(game)
+        total_loss, timesteps = agent(game)
+        if args['show_timestep']:
+          print(timesteps)
+          return
         per_agent_loss = total_loss.data[0] / num_agents / game_config.batch_size
         losses[num_agents][num_landmarks].append(per_agent_loss)
 
         dist = game.get_avg_agent_to_goal_distance()
-        avg_dist = dist.data[0] / num_agents / game_config.batch_size
+        avg_dist = dist.data.item() / num_agents / game_config.batch_size # turn into item to extract element of tensor
         dists[num_agents][num_landmarks].append(avg_dist)
 
         print_losses(epoch, losses, dists, game_config)
