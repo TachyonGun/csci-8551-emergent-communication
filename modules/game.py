@@ -119,7 +119,7 @@ class GameModule(nn.Module):
 
     
     def return_state(self):
-        return [self.locations, self.physical]
+        return [self.locations, self.physical, self.utterances]
 
     """
     Updates game state given all movements and utterances and returns accrued cost
