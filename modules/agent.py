@@ -113,11 +113,11 @@ class AgentModule(nn.Module):
                 cost = cost + self.word_counter(utterances)
 
             self.total_cost = self.total_cost + cost
-            if not self.training:
-                timesteps.append({
-                    'locations': game.locations,
-                    'movements': movements,
-                    'loss': cost})
-                if self.using_utterances:
-                    timesteps[-1]['utterances'] = utterances
+            #if not self.training:
+            timesteps.append({
+                'locations': game.locations,
+                'movements': movements,
+                'loss': cost})
+            if self.using_utterances:
+                timesteps[-1]['utterances'] = utterances
         return self.total_cost, timesteps
