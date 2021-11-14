@@ -148,10 +148,10 @@ class GameModule(nn.Module):
         
             return self.compute_cost(movements, goal_predictions, utterances)
         else:
-          # Update state history
-          if self.collect_state_history:
-              self.state_history.append(self.return_state())
-        
+            # Update state history
+            if self.collect_state_history:
+                self.state_history.append(self.return_state())
+          
             return self.compute_cost(movements, goal_predictions)
 
     def compute_cost(self, movements, goal_predictions, utterances=None):
