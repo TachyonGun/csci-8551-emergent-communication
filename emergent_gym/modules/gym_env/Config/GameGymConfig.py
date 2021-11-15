@@ -4,9 +4,11 @@ class GymConfig:
                  max_agents: int = 2, min_agents: int = 2, max_landmarks: int = 4, min_landmarks: int = 4,
                  vocab_size: int = 20, world_dim: int = 16, oov_prob=None, load_model_weights: str = None,
                  save_model_weights: str = None, use_cuda: bool = False, show_timestep: bool = True,
-                 collect_state_history: bool = True, memory_size = 10, **kwargs):
-        self.use_utterances = use_utterances
-        self.penalize_words = penalize_words
+                 collect_state_history: bool = True, memory_size: int = 10, **kwargs):
+
+        #TODO: TYpe checking
+        self.use_utterances = bool(use_utterances)
+        self.penalize_words = bool(penalize_words)
         self.n_epochs = n_epochs
         self.learning_rate = learning_rate
         self.batch_size = batch_size
@@ -22,10 +24,10 @@ class GymConfig:
         self.oov_prob = oov_prob
         self.load_model_weights = load_model_weights
         self.save_model_weight = save_model_weights
-        self.use_cuda = use_cuda
-        self.show_timesteps = show_timestep
-        self.collect_state_history = collect_state_history
-        self.memory_size = 10
+        self.use_cuda = bool(use_cuda)
+        self.show_timesteps = bool(show_timestep)
+        self.collect_state_history = bool(collect_state_history)
+        self.memory_size = memory_size
 
     def __str__(self):
         return f'''
