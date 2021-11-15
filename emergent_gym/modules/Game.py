@@ -4,20 +4,21 @@ from emergent_gym.modules.gym_env.Config.GameGymConfig import GymConfig
 from emergent_gym.modules.gym_env.GameGym import GameGym
 
 
+def load_config(filename: str):
+    fP = open(filename, "r")
+    config_file = yaml.load(fP,yaml.FullLoader)
+    fP.close()
+    print(config_file)
+    config = GymConfig(**config_file)
+    return config
+
+
 class Game:
     def __init__(self, filename:str, verbose: bool = False):
-        self._config = self.load_config(filename)
+        self._config = load_config(filename)
         self._verbose = verbose
         if self._verbose:
             print(self.__str__())
-
-    def load_config(self, filename: str):
-        fP = open(filename, "r")
-        config_file = yaml.load(fP,yaml.FullLoader)
-        fP.close()
-        print(config_file)
-        config = GymConfig(**config_file)
-        return config
 
     @property
     def config(self):
