@@ -33,9 +33,13 @@ from torch.autograd import Variable
 
 class GameModule(nn.Module):
 
-    def __init__(self, config, num_agents, num_landmarks, collect_state_history=True):
-        super(GameModule, self).__init__()
+    def __init__(self, config, num_agents, num_landmarks, collect_state_history=True, seed=None):
+
         
+        super(GameModule, self).__init__()
+
+        if seed is not None:
+          torch.manual_seed(seed)
         self.collect_state_history = collect_state_history
         self.state_history = []
         self.batch_size = config.batch_size # scalar: num games in this batch
@@ -116,6 +120,7 @@ class GameModule(nn.Module):
         self.observed_goals = torch.cat((new_obs, goal_agents), dim=2)
         if self.collect_state_history:
             self.state_history.append(self.return_state())
+
 
     
     def return_state(self):
