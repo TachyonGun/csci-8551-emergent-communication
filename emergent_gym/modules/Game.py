@@ -22,7 +22,6 @@ class Game:
     @property
     def config(self):
         return self._config
-        pass
 
 
     def run(self):
