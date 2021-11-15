@@ -112,7 +112,6 @@ class GameGym(gym.Env):
         if self.collect_state_history:
             self.state_history.append(self.return_state())
 
-
     def return_state(self):
         return [self.locations, self.physical, self.utterances]
 
@@ -140,10 +139,10 @@ class GameGym(gym.Env):
             return self.compute_cost(action['movements'], action['goal_predictions'])
 
     def reset(self):
-        # Reset the state of the environment to an initial state
+        # Modify init to encode initial state space in some way (either save to file or seeded randoms)
+        # When resetting, reset the state variables to initial state
         pass
 
     def render(self, mode='human', close=False):
-        # Render the environment to the screen
-        # Port over code
+        #TODO: Call on rendering code
         pass
