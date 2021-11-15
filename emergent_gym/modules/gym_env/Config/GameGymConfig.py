@@ -1,5 +1,5 @@
 class GymConfig:
-    def __init__(self, use_utterances: bool = False, penalize_words: bool = False, n_epochs: int = 1, learning_rate=None,
+    def __init__(self, use_utterances: bool = True, penalize_words: bool = False, n_epochs: int = 1, learning_rate=None,
                  batch_size: int = 2, n_timesteps: int = 2, num_shapes: int = 4, num_colors: int = 4,
                  max_agents: int = 2, min_agents: int = 2, max_landmarks: int = 4, min_landmarks: int = 4,
                  vocab_size: int = 20, world_dim: int = 16, oov_prob=None, load_model_weights: str = None,

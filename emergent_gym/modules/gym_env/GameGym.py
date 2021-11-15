@@ -96,6 +96,7 @@ class GameGym(gym.Env):
         # [batch_size, num_agents, num_entities, 2]
         self.observations = self.locations.unsqueeze(1) - agent_baselines.unsqueeze(2)
 
+
         self.observation_space = {
             "utterances": self.utterances,
             "memories": self.memories,

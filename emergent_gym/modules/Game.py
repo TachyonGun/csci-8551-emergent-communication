@@ -4,17 +4,17 @@ from emergent_gym.modules.gym_env.Config.GameGymConfig import GymConfig
 from emergent_gym.modules.gym_env.GameGym import GameGym
 
 
+# TODO: Write Custom Deserializer
 def load_config(filename: str):
     fP = open(filename, "r")
-    config_file = yaml.load(fP,yaml.FullLoader)
+    config_file = yaml.load(fP, yaml.FullLoader)
     fP.close()
-    print(config_file)
     config = GymConfig(**config_file)
     return config
 
 
 class Game:
-    def __init__(self, filename:str, verbose: bool = False):
+    def __init__(self, filename: str, verbose: bool = False):
         self._config = load_config(filename)
         self._verbose = verbose
         if self._verbose:
@@ -24,9 +24,9 @@ class Game:
     def config(self):
         return self._config
 
-
     def run(self):
-        #Todo: This is where the training script will be integrated
+        # TODO: This is where the training script will be integrated
+        self.GameGym = GameGym(self._config)
         pass
 
     def __str__(self):
@@ -36,9 +36,7 @@ class Game:
 if __name__ == "__main__":
     parser = ArgumentParser("Test Game")
     parser.add_argument("--config", type=str, required=True, help="Path to config file")
-    parser.add_argument("-v","--verbose", type=bool, default=False)
+    parser.add_argument("-v", "--verbose", type=bool, default=False)
     args = parser.parse_args()
-    game = Game(args.config,args.verbose)
+    game = Game(args.config, args.verbose)
     game.run()
-
-

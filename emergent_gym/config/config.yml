@@ -1,4 +1,4 @@
-use_utterances: False
+use_utterances: True
 penalize_words: False
 n_epochs: 1
 learning_rate: None
@@ -10,7 +10,7 @@ max_agents: 2
 min_agents: 2
 max_landmarks: 4
 min_landmarks: 4
-vocab_size: None
+vocab_size: 20
 oov_prob: None
 load_model_weights: None
 save_model_weights: None
