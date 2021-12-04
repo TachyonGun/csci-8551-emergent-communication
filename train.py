@@ -6,6 +6,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 import configs
 from modules.agent import AgentModule
 from modules.game import GameModule
+from emergent_gym.EmergentGym import EmergentGym
 from collections import defaultdict
 
 parser = argparse.ArgumentParser(description="Trains the agents for cooperative communication task")
@@ -63,7 +64,7 @@ def main():
         num_agents = np.random.randint(game_config.min_agents, game_config.max_agents+1)
         num_landmarks = np.random.randint(game_config.min_landmarks, game_config.max_landmarks+1)
         agent.reset()
-        game = GameModule(game_config, num_agents, num_landmarks)
+        game = EmergentGym(game_config, num_agents, num_landmarks)
         if training_config.use_cuda:
             game.cuda()
         optimizer.zero_grad()
