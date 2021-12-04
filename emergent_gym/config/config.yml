@@ -6,10 +6,10 @@ batch_size: 2
 n_timesteps: 16
 num_shapes: 4
 num_colors: 4
-max_agents: 2
-min_agents: 2
-max_landmarks: 4
-min_landmarks: 4
+max_agents: 3
+min_agents: 3
+max_landmarks: 5
+min_landmarks: 5
 vocab_size: 20
 oov_prob: None
 load_model_weights: None

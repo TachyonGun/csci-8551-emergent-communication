@@ -24,8 +24,6 @@ class AgentModule(nn.Module):
         self.physical_pooling = nn.AdaptiveMaxPool2d((1,config.feat_vec_size))
         self.action_processor = ActionModule(config.action_processor)
 
-        self.environment = list()
-
         if self.using_utterances:
             self.utterance_processor = GoalPredictingProcessingModule(config.utterance_processor)
             self.utterance_pooling = nn.AdaptiveMaxPool2d((1,config.feat_vec_size))
@@ -94,6 +92,8 @@ class AgentModule(nn.Module):
         movements[:,agent,:] = movement
         if self.using_utterances:
             utterances[:,agent,:] = utterance
+
+    #Change forward to play_episode to use gym environment to run forward method
 
     def forward(self, game):
         timesteps = []
