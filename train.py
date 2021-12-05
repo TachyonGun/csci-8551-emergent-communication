@@ -6,6 +6,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 import configs
 from modules.agent import AgentModule
 from modules.game import GameModule
+from emergent_gym.EmergentGym import EmergentGym
 from collections import defaultdict
 
 parser = argparse.ArgumentParser(description="Trains the agents for cooperative communication task")
@@ -44,10 +45,32 @@ def print_losses(epoch, losses, dists, game_config):
     print("_________________________")
 
 def main():
+    args_game = {'no_utterances': False, 'penalize_words': False,
+                 'n_epochs': 1, 'learning_rate': None,
+                 'batch_size': 8, 'n_timesteps': 16,
+                 'num_shapes': 4, 'num_colors': 4,
+                 'max_agents': 5, 'min_agents': 5,
+                 'max_landmarks': 4, 'min_landmarks': 4,
+                 'vocab_size': None, 'world_dim': 16,
+                 'oov_prob': None, 'load_model_weights': None,
+                 'save_model_weights': None, 'use_cuda': False,
+                 'show_timestep': True, "validation_every":1
+                 }
     args = vars(parser.parse_args())
-    agent_config = configs.get_agent_config(args)
-    game_config = configs.get_game_config(args)
-    training_config = configs.get_training_config(args)
+    play_val_game = args_game["validation_every"]
+    show_single_episode = args_game.get("show_single_episode",True)
+    for key in args.keys():
+        if args[key] == None:
+            continue
+        args_game[key] = args[key]
+
+    if play_val_game is not None:
+        val_replays = []
+
+    agent_config = configs.get_agent_config(args_game)
+    game_config = configs.get_game_config(args_game)
+
+    training_config = configs.get_training_config(args_game)
     print("Training with config:")
     print(training_config)
     print(game_config)
@@ -63,15 +86,26 @@ def main():
         num_agents = np.random.randint(game_config.min_agents, game_config.max_agents+1)
         num_landmarks = np.random.randint(game_config.min_landmarks, game_config.max_landmarks+1)
         agent.reset()
-        game = GameModule(game_config, num_agents, num_landmarks)
+        game = EmergentGym(game_config, num_agents, num_landmarks, args_game)
         if training_config.use_cuda:
             game.cuda()
         optimizer.zero_grad()
 
         total_loss, timesteps = agent(game)
+
+        if play_val_game and epoch % play_val_game == 0:
+          val_game = EmergentGym(game_config, num_agents, num_landmarks, args_game, seed=42)
+          agent.reset()
+          agent(val_game)
+          val_replays.append(val_game.timesteps)
+
+          if show_single_episode:
+              val_game.render_episode_grid(epoch)
+
         if args['show_timestep']:
           print(timesteps)
           return
+
         per_agent_loss = total_loss.data[0] / num_agents / game_config.batch_size
         losses[num_agents][num_landmarks].append(per_agent_loss)
 
@@ -83,6 +117,7 @@ def main():
 
         total_loss.backward()
         optimizer.step()
+        #game.render_episode()
 
         if num_agents == game_config.max_agents and num_landmarks == game_config.max_landmarks:
             scheduler.step(losses[game_config.max_agents][game_config.max_landmarks][-1])
