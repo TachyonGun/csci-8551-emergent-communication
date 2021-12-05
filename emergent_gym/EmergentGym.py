@@ -8,6 +8,11 @@ Created on Sat Nov 13 22:17:11 2021
 """
 
 import torch
+import matplotlib.pyplot as plt
+import numpy as np
+import time
+from PIL import Image
+import glob
 import torch.nn as nn
 from torch import Tensor
 from torch.autograd import Variable
@@ -35,10 +40,15 @@ from torch.autograd import Variable
 
 
 class EmergentGym(gym.Env):
-    def __init__(self, config, num_agents, num_landmarks, collect_state_history=True, seed=None):
+
+    def __init__(self, config, num_agents, num_landmarks, args, collect_state_history=True, seed=None):
         super(EmergentGym, self).__init__()
+
+        self.timesteps = []
+
         if seed is not None:
             torch.manual_seed(seed)
+        self.args = args
         self.collect_state_history = collect_state_history
         self.state_history = []
         self.batch_size = config.batch_size  # scalar: num games in this batch
@@ -127,6 +137,9 @@ class EmergentGym(gym.Env):
     def return_state(self):
         return [self.locations, self.physical, self.utterances]
 
+    def log_state(self):
+        self.timesteps.append(self.return_state())
+
     """
     Updates game state given all movements and utterances and returns accrued cost
         - movements: [batch_size, num_agents, config.movement_size]
@@ -155,13 +168,13 @@ class EmergentGym(gym.Env):
             # Update state history
             if self.collect_state_history:
                 self.state_history.append(self.return_state())
-
+            self.log_state()
             return self.compute_cost(movements, goal_predictions, utterances)
         else:
             # Update state history
             if self.collect_state_history:
                 self.state_history.append(self.return_state())
-
+            self.log_state()
             return self.compute_cost(movements, goal_predictions)
 
     def compute_cost(self, movements, goal_predictions, utterances=None):
@@ -237,6 +250,142 @@ class EmergentGym(gym.Env):
     def reset(self):
         pass
 
-    def render(self, mode="human"):
-        pass
+    def visualize_world_and_vocab(self, locations, physical, args,
+                                  n_agents=None,
+                                  batch=0,
+                                  tol=4,
+                                  t=None,
+                                  clear_previous=False,
+                                  save=True,
+                                  trajectories=[],
+                                  vocab=None,
+                                  utterances=None,
+                                  show_speech_bubble=True,
+                                  show_first_quadrant=True,
+                                  return_plot=False,
+                                  filename="",
+                                  show_plot=True):
 
+        batch = batch
+        player_icon = "o"
+        landmark_icons = ["^", "s", "P", "X"]
+        colors = ["r", "b", "g", "c", "m", "k"]
+
+        n_entities = locations[batch].shape[0]
+
+        world_dim = args["world_dim"] + tol
+
+        f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [5, 1]})
+
+        if not show_first_quadrant:
+            a0.set_xlim([-world_dim, world_dim])
+            a0.set_ylim([-world_dim, world_dim])
+        else:
+            a0.set_xlim([0, world_dim])
+            a0.set_ylim([0, world_dim])
+
+        if n_agents is None:
+            list_of_agents = [i for i in range(args["min_agents"])]
+        else:
+            list_of_agents = [i for i in range(n_agents)]
+
+        a0.set_aspect(1)
+
+        for i in reversed(range(n_entities)):
+            color_id = int(torch.clone(physical[batch][i, 0]).detach().numpy())
+            icon_id = int(torch.clone(physical[batch][i, 1]).detach().numpy())
+            icon = player_icon if (i in list_of_agents) else landmark_icons[icon_id]
+            color = colors[color_id]
+            x, y = locations[batch][i, :].detach().numpy()
+            if i in list_of_agents:
+                a0.scatter(x, y, c=color, marker=icon, s=world_dim * 20, alpha=0.4)
+                a0.scatter(x, y, c=color, marker=icon, s=world_dim * 5)
+                if not show_first_quadrant:
+                    if show_speech_bubble and x < world_dim and y < world_dim and x > -world_dim and y > -world_dim:
+                        utter = np.argmax(torch.clone(utterances[batch][i]).detach().numpy())
+                        a0.text(x - world_dim / 15, y - world_dim / 15, f"[{utter:02d}]")
+                else:
+                    if show_speech_bubble and x < world_dim and y < world_dim and x > 0 and y > 0:
+                        utter = np.argmax(torch.clone(utterances[batch][i]).detach().numpy())
+                        a0.text(x - world_dim / 15, y - world_dim / 15, f"[{utter:02d}]")
+            else:
+                a0.scatter(x, y, c=color, marker=icon, s=world_dim * 15)
+
+        if t is not None:
+            # plt.title(f"t = {t:03d}")
+            pass
+
+        if len(trajectories) >= 2:
+            for i in range(1, len(trajectories)):
+                coord_init, coord_last = trajectories[i - 1][batch].clone().detach(), trajectories[i][batch].clone().detach()
+                for j in list_of_agents:
+                    x_in, y_in = coord_init[j, :]
+                    x_out, y_out = coord_last[j, :]
+                    a0.plot([x_in, x_out], [y_in, y_out], linestyle='dotted', c='gray')
+
+        if utterances is not None:
+            a1.imshow(torch.clone(utterances[batch]).detach().numpy(), cmap='cividis')
+            a1.set_xticks([])
+            a1.set_yticks([])
+
+        # plt.axis("off")
+        a0.set_xticks([])
+        a0.set_yticks([])
+        plt.gca().set_aspect('equal', adjustable='box')
+        plt.gcf().set_size_inches(5, 6)
+        plt.subplots_adjust(wspace=-1, hspace=-.25)
+        if clear_previous:
+            #clear_output()
+            pass
+
+        if save:
+            plt.savefig(f"{filename}{t:03d}.png", bbox_inches='tight', pad_inches=0.1)
+        if return_plot:
+            return f
+        if show_plot:
+            plt.show()
+
+    def make_gif(self, batch=0, filename_template="image", filename_save="./images", show_gif=True):
+        fp_in = filename_template + "*.png"
+        fp_out = f"{filename_save}movie_{batch}.gif"
+
+        # https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html#gif
+        img, *imgs = [Image.open(f) for f in sorted(glob.glob(fp_in))]
+        img.save(fp=fp_out, format='GIF', append_images=imgs,
+                 save_all=True, duration=200, loop=0)
+        if show_gif:
+
+
+
+    def render(self, mode="human"):
+        self.visualize_world_and_vocab(self.locations, self.physical, self.args, n_agents=self.num_agents,
+                                 batch=0,
+                                 tol=4,
+                                 t=None,
+                                 clear_previous=False,
+                                 save=False,
+                                 trajectories=[],
+                                 vocab=None,
+                                 utterances=self.utterances,
+                                 show_speech_bubble=True,
+                                 show_first_quadrant=True,
+                                 return_plot=False,
+                                 filename="image.png",
+                                 show_plot=True)
+
+    def render_episode(self, mode="human"):
+
+        delay = 1
+        trajectories = []
+
+        for t in range(self.args["n_timesteps"] + 1):
+
+            trajectories.append(self.timesteps[t][0])
+
+            locs, phys = self.timesteps[t][0], self.timesteps[t][1]
+            utterances = self.timesteps[t][2]
+            self.visualize_world_and_vocab(locs, phys, self.args, t=t, trajectories=trajectories, utterances=utterances, filename="./images/image")
+
+            time.sleep(delay)
+
+        self.make_gif()
