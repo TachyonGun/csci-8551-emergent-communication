@@ -47,9 +47,9 @@ def print_losses(epoch, losses, dists, game_config):
 def main():
     args_game = {'no_utterances': False, 'penalize_words': False,
                  'n_epochs': 1, 'learning_rate': None,
-                 'batch_size': 2, 'n_timesteps': 16,
+                 'batch_size': 8, 'n_timesteps': 16,
                  'num_shapes': 4, 'num_colors': 4,
-                 'max_agents': 2, 'min_agents': 2,
+                 'max_agents': 5, 'min_agents': 5,
                  'max_landmarks': 4, 'min_landmarks': 4,
                  'vocab_size': None, 'world_dim': 16,
                  'oov_prob': None, 'load_model_weights': None,
@@ -67,9 +67,10 @@ def main():
     if play_val_game is not None:
         val_replays = []
 
-    agent_config = configs.get_agent_config(args)
-    game_config = configs.get_game_config(args)
-    training_config = configs.get_training_config(args)
+    agent_config = configs.get_agent_config(args_game)
+    game_config = configs.get_game_config(args_game)
+
+    training_config = configs.get_training_config(args_game)
     print("Training with config:")
     print(training_config)
     print(game_config)
