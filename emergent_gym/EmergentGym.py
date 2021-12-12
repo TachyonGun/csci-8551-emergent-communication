@@ -299,8 +299,8 @@ class EmergentGym(gym.Env):
         a0.set_aspect(1)
 
         for i in reversed(range(n_entities)):
-            color_id = int(torch.clone(physical[batch][i, 0]).detach().numpy())
-            icon_id = int(torch.clone(physical[batch][i, 1]).detach().numpy())
+            color_id = int(torch.clone(physical[batch][i, 0]).cpu().detach().numpy())
+            icon_id = int(torch.clone(physical[batch][i, 1]).cpu().detach().numpy())
             icon = player_icon if (i in list_of_agents) else landmark_icons[icon_id]
             color = colors[color_id]
             x, y = locations[batch][i, :].detach().numpy()
@@ -309,11 +309,11 @@ class EmergentGym(gym.Env):
                 a0.scatter(x, y, c=color, marker=icon, s=world_dim * 5)
                 if not show_first_quadrant:
                     if show_speech_bubble and x < world_dim and y < world_dim and x > -world_dim and y > -world_dim:
-                        utter = np.argmax(torch.clone(utterances[batch][i]).detach().numpy())
+                        utter = np.argmax(torch.clone(utterances[batch][i]).cpu().detach().numpy())
                         a0.text(x - world_dim / 15, y - world_dim / 15, f"[{utter:02d}]")
                 else:
                     if show_speech_bubble and x < world_dim and y < world_dim and x > 0 and y > 0:
-                        utter = np.argmax(torch.clone(utterances[batch][i]).detach().numpy())
+                        utter = np.argmax(torch.clone(utterances[batch][i]).cpu().detach().numpy())
                         a0.text(x - world_dim / 15, y - world_dim / 15, f"[{utter:02d}]")
             else:
                 a0.scatter(x, y, c=color, marker=icon, s=world_dim * 15)

@@ -49,11 +49,11 @@ def main():
                  'n_epochs': 1, 'learning_rate': None,
                  'batch_size': 8, 'n_timesteps': 16,
                  'num_shapes': 4, 'num_colors': 4,
-                 'max_agents': 5, 'min_agents': 5,
-                 'max_landmarks': 4, 'min_landmarks': 4,
+                 'max_agents': 2, 'min_agents': 2,
+                 'max_landmarks': 3, 'min_landmarks': 3,
                  'vocab_size': None, 'world_dim': 16,
                  'oov_prob': None, 'load_model_weights': None,
-                 'save_model_weights': None, 'use_cuda': False,
+                 'save_model_weights': None, 'use_cuda': True,
                  'show_timestep': True, "validation_every":1
                  }
     args = vars(parser.parse_args())
@@ -76,8 +76,8 @@ def main():
     print(game_config)
     print(agent_config)
     agent = AgentModule(agent_config)
-    if training_config.use_cuda:
-        agent.cuda()
+    # if training_config.use_cuda:
+    #     agent.cuda()
     optimizer = RMSprop(agent.parameters(), lr=training_config.learning_rate)
     scheduler = ReduceLROnPlateau(optimizer, 'min', verbose=True, cooldown=5)
     losses = defaultdict(lambda:defaultdict(list))
