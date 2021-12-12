@@ -303,7 +303,7 @@ class EmergentGym(gym.Env):
             icon_id = int(torch.clone(physical[batch][i, 1]).cpu().detach().numpy())
             icon = player_icon if (i in list_of_agents) else landmark_icons[icon_id]
             color = colors[color_id]
-            x, y = locations[batch][i, :].detach().numpy()
+            x, y = torch.clone(locations[batch][i, :]).cpu().detach().numpy()
             if i in list_of_agents:
                 a0.scatter(x, y, c=color, marker=icon, s=world_dim * 20, alpha=0.4)
                 a0.scatter(x, y, c=color, marker=icon, s=world_dim * 5)
