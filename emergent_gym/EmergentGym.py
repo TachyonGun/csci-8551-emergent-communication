@@ -44,7 +44,7 @@ class EmergentGym(gym.Env):
 
     def __init__(self, config, num_agents, num_landmarks, args, collect_state_history=True, seed=None):
         super(EmergentGym, self).__init__()
-
+        self.prefix = args['prefix']
         self.timesteps = []
 
         if seed is not None:
@@ -352,7 +352,7 @@ class EmergentGym(gym.Env):
         if show_plot:
             plt.show()
 
-    def make_gif(self, batch=0, filename_template="./images/image", filename_save="./images", show_gif=True):
+    def make_gif(self, batch, filename_template: str, filename_save: str, show_gif=True):
         fp_in = filename_template + "*.png"
         fp_out = f"{filename_save}movie_{batch}.gif"
 
@@ -360,9 +360,6 @@ class EmergentGym(gym.Env):
         img, *imgs = [Image.open(f) for f in sorted(glob.glob(fp_in))]
         img.save(fp=fp_out, format='GIF', append_images=imgs,
                  save_all=True, duration=200, loop=0)
-        # TODO
-        # if show_gif:
-        #    os.startfile(fp_out)
 
     def render(self, mode="human"):
         self.visualize_world_and_vocab(self.locations, self.physical, self.args, n_agents=self.num_agents,
@@ -396,15 +393,15 @@ class EmergentGym(gym.Env):
             self.visualize_world_and_vocab(locs, phys, self.args, t=t, trajectories=trajectories, utterances=utterances,
                                            filename=f"./images/epoch-{epoch}/episodes/image", show_plot=False,epoch=epoch)
 
-        self.make_gif(batch=0, filename_template=f"./images/epoch-{epoch}/episodes/",
-                      filename_save=f"./images/epoch-{epoch}/")
+        self.make_gif(batch=0, filename_template=f"{self.prefix}/images/epoch-{epoch}/episodes/",
+                      filename_save=f"{self.prefix}/images/epoch-{epoch}/")
 
     def render_episode_grid(self, epoch=0, show_utterances=False, title=None):
 
-            if not os.path.exists(f"./images/epoch-{epoch}/episodes"):
-                os.makedirs(f"./images/epoch-{epoch}/episodes")
-            if not os.path.exists(f"./images/epoch-{epoch}/comp"):
-                os.makedirs(f"./images/epoch-{epoch}/comp")
+            if not os.path.exists(f"{self.prefix}/images/epoch-{epoch}/episodes"):
+                os.makedirs(f"{self.prefix}/images/epoch-{epoch}/episodes")
+            if not os.path.exists(f"{self.prefix}/images/epoch-{epoch}/comp"):
+                os.makedirs(f"{self.prefix}/images/epoch-{epoch}/comp")
 
             for batch in range(8):
 
@@ -417,12 +414,12 @@ class EmergentGym(gym.Env):
 
                     locs, phys = self.timesteps[t][0], self.timesteps[t][1]
 
-                    utterances = self.timesteps[t][2]
+                    # utterances = self.timesteps[t][2]
                     utterances = self.timesteps[t][2] if show_utterances else None
                     self.visualize_world_and_vocab(locs, phys, self.args, t=t, trajectories=trajectories, batch=batch,
                                                    utterances=utterances,
-                                                   filename=f"./images/epoch-{epoch}/episodes/{batch}_", show_plot=False,
-                                                   epoch=None)
+                                                   filename=f"{self.prefix}/images/epoch-{epoch}/episodes/{batch}_",
+                                                   show_plot=False, epoch=None)
                     plt.close()
 
             for t in range(len(self.timesteps)):
@@ -431,7 +428,7 @@ class EmergentGym(gym.Env):
                 col = 0
                 for batch in range(8):
 
-                    img = plt.imread(f"./images/epoch-{epoch}/episodes/{batch}_{t:03d}.png")
+                    img = plt.imread(f"{self.prefix}/images/epoch-{epoch}/episodes/{batch}_{t:03d}.png")
 
                     axs[row, col].imshow(img)
                     axs[row, col].axis('off')
@@ -448,8 +445,8 @@ class EmergentGym(gym.Env):
                     # plt.title(title)
                     plt.suptitle(title, fontsize=40, y=1.05)
 
-                plt.savefig(f"./images/epoch-{epoch}/comp/comp_{t:03d}.png")
+                plt.savefig(f"{self.prefix}/images/epoch-{epoch}/comp/comp_{t:03d}.png")
                 plt.close()
 
-            self.make_gif(batch=0, filename_template=f"./images/epoch-{epoch}/comp/",
-                          filename_save=f"./images/epoch-{epoch}/")
+            self.make_gif(batch=0, filename_template=f"{self.prefix}/images/epoch-{epoch}/comp/",
+                          filename_save=f"{self.prefix}/images/epoch-{epoch}/")

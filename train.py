@@ -54,7 +54,8 @@ def main():
                  'vocab_size': None, 'world_dim': 16,
                  'oov_prob': None, 'load_model_weights': None,
                  'save_model_weights': None, 'use_cuda': True,
-                 'show_timestep': True, "validation_every":1
+                 'show_timestep': True, "validation_every":1,
+                 'prefix': "./results"
                  }
     args = vars(parser.parse_args())
     play_val_game = args_game["validation_every"]
