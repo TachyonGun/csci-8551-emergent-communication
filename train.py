@@ -29,6 +29,7 @@ parser.add_argument('--load-model-weights', type=str, help='if specified start w
 parser.add_argument('--save-model-weights', type=str, help='if specified save the model weights at file given by this argument')
 parser.add_argument('--use-cuda', action='store_true', help='if specified enables training on CUDA (default disabled)')
 parser.add_argument('--show-timestep', action='store_true', help='show a timestep structure')
+parser.add_argument("--prefix", type=str, help="Path to output rendering")
 
 
 
