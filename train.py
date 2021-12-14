@@ -124,6 +124,7 @@ def main():
         dists[num_agents][num_landmarks].append(avg_dist)
 
         print_losses(epoch, losses, dists, game_config, fP)
+        fP.flush()
 
         total_loss.backward()
         optimizer.step()
