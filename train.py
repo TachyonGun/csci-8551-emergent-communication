@@ -33,7 +33,7 @@ parser.add_argument("--prefix", type=str, help="Path to output rendering")
 
 
 
-def print_losses(epoch, losses, dists, game_config):
+def print_losses(epoch, losses, dists, game_config, fP = None):
     for a in range(game_config.min_agents, game_config.max_agents + 1):
         for l in range(game_config.min_landmarks, game_config.max_landmarks + 1):
             loss = losses[a][l][-1] if len(losses[a][l]) > 0 else 0
@@ -43,7 +43,13 @@ def print_losses(epoch, losses, dists, game_config):
             min_dist = min(dists[a][l]) if len(dists[a][l]) > 0 else 0
 
             print("[epoch %d][%d agents, %d landmarks][%d batches][last loss: %f][min loss: %f][last dist: %f][min dist: %f]" % (epoch, a, l, len(losses[a][l]), loss, min_loss, dist, min_dist))
+            if fP is not None:
+                fP.write("[epoch %d][%d agents, %d landmarks][%d batches][last loss: %f][min loss: %f][last dist: %f][min dist: %f]\n" % (epoch, a, l, len(losses[a][l]), loss, min_loss, dist, min_dist))
+
+    if fP is not None:
+        fP.write("_________________________\n")
     print("_________________________")
+
 
 def main():
     args_game = {'no_utterances': False, 'penalize_words': False,
@@ -84,6 +90,8 @@ def main():
     scheduler = ReduceLROnPlateau(optimizer, 'min', verbose=True, cooldown=5)
     losses = defaultdict(lambda:defaultdict(list))
     dists = defaultdict(lambda:defaultdict(list))
+    log_accumulator = dict()
+    fP = open(f"{args_game['prefix']}/log.txt","w+")
     for epoch in range(training_config.num_epochs):
         num_agents = np.random.randint(game_config.min_agents, game_config.max_agents+1)
         num_landmarks = np.random.randint(game_config.min_landmarks, game_config.max_landmarks+1)
@@ -115,7 +123,7 @@ def main():
         avg_dist = dist.data.item() / num_agents / game_config.batch_size # turn into item to extract element of tensor
         dists[num_agents][num_landmarks].append(avg_dist)
 
-        print_losses(epoch, losses, dists, game_config)
+        print_losses(epoch, losses, dists, game_config, fP)
 
         total_loss.backward()
         optimizer.step()
@@ -123,7 +131,7 @@ def main():
 
         if num_agents == game_config.max_agents and num_landmarks == game_config.max_landmarks:
             scheduler.step(losses[game_config.max_agents][game_config.max_landmarks][-1])
-
+    fP.close()
     if training_config.save_model:
         torch.save(agent, training_config.save_model_file)
         print("Saved agent model weights at %s" % training_config.save_model_file)
