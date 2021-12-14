@@ -91,7 +91,7 @@ def main():
     losses = defaultdict(lambda:defaultdict(list))
     dists = defaultdict(lambda:defaultdict(list))
     log_accumulator = dict()
-    fP = open(f"{args_game['prefix']}/log.txt","w+")
+    fP = open(f"{args_game['prefix']}/log.txt","w")
     for epoch in range(training_config.num_epochs):
         num_agents = np.random.randint(game_config.min_agents, game_config.max_agents+1)
         num_landmarks = np.random.randint(game_config.min_landmarks, game_config.max_landmarks+1)
