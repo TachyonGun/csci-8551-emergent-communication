@@ -85,8 +85,8 @@ def main():
     print(game_config)
     print(agent_config)
     agent = AgentModule(agent_config)
-    # if training_config.use_cuda:
-    #     agent.cuda()
+    if training_config.use_cuda:
+        agent.cuda()
     optimizer = RMSprop(agent.parameters(), lr=training_config.learning_rate)
     scheduler = ReduceLROnPlateau(optimizer, 'min', verbose=True, cooldown=5)
     losses = defaultdict(lambda:defaultdict(list))

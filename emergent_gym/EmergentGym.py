@@ -324,15 +324,15 @@ class EmergentGym(gym.Env):
 
         if len(trajectories) >= 2:
             for i in range(1, len(trajectories)):
-                coord_init, coord_last = trajectories[i - 1][batch].clone().detach(), trajectories[i][
-                    batch].clone().detach()
+                coord_init, coord_last = trajectories[i - 1][batch].clone().cpu().detach(), trajectories[i][
+                    batch].clone().cpu().detach()
                 for j in list_of_agents:
                     x_in, y_in = coord_init[j, :]
                     x_out, y_out = coord_last[j, :]
                     a0.plot([x_in, x_out], [y_in, y_out], linestyle='dotted', c='gray')
 
         if utterances is not None:
-            a1.imshow(torch.clone(utterances[batch]).detach().numpy(), cmap='cividis')
+            a1.imshow(torch.clone(utterances[batch]).clone().cpu().detach().numpy(), cmap='cividis')
             a1.set_xticks([])
             a1.set_yticks([])
 
