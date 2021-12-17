@@ -15,7 +15,7 @@ for vocab_size in $(seq $vocab_size_min $vocab_size_max); do
       python train.py --max-agents $num_agents --min-agents $num_agents --min-landmarks $num_landmarks \
               --max-landmarks  $num_landmarks \
               --prefix $prefix/vocab_$vocab_size/agents_$num_agents/landmarks_$num_landmarks --n-epochs $epochs \
-              --show-utterances --vocab-size $vocab_size
+              --show-utterances --vocab-size $vocab_size --use-cuda
     done
   done
 done
