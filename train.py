@@ -98,8 +98,8 @@ def main():
         num_landmarks = np.random.randint(game_config.min_landmarks, game_config.max_landmarks+1)
         agent.reset()
         game = EmergentGym(game_config, num_agents, num_landmarks, args_game)
-        if training_config.use_cuda:
-            game.cuda()
+        # if training_config.use_cuda:
+        #     game.cuda()
         optimizer.zero_grad()
 
         total_loss, timesteps = agent(game)
