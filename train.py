@@ -29,6 +29,7 @@ parser.add_argument('--load-model-weights', type=str, help='if specified start w
 parser.add_argument('--save-model-weights', type=str, help='if specified save the model weights at file given by this argument')
 parser.add_argument('--use-cuda', action='store_true', help='if specified enables training on CUDA (default disabled)')
 parser.add_argument('--show-timestep', action='store_true', help='show a timestep structure')
+parser.add_argument('--show-utterances', action='store_true', help='show utterances')
 parser.add_argument("--prefix", type=str, help="Path to output rendering")
 
 
@@ -62,7 +63,7 @@ def main():
                  'oov_prob': None, 'load_model_weights': None,
                  'save_model_weights': None, 'use_cuda': True,
                  'show_timestep': True, "validation_every":1,
-                 'prefix': "./results"
+                 'prefix': "./results", 'show_utterances': True
                  }
     args = vars(parser.parse_args())
     play_val_game = args_game["validation_every"]
@@ -110,7 +111,7 @@ def main():
           val_replays.append(val_game.timesteps)
 
           if show_single_episode:
-              val_game.render_episode_grid(epoch)
+              val_game.render_episode_grid(epoch,show_utterances=args_game['show_utterances'])
 
         if args['show_timestep']:
           print(timesteps)
